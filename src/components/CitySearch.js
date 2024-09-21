@@ -1,13 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 
-const API_KEY = process.env.REACT_APP_API_KEY;
-
 const CitySearch = ({ onCitySelect }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [cities, setCities] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -23,38 +19,28 @@ const CitySearch = ({ onCitySelect }) => {
     };
   }, []);
 
-  useEffect(() => {
-    if (searchTerm.length > 2) {
-      handleSearch();
-    } else {
-      setCities([]);
-      setIsOpen(false);
-    }
-  }, [searchTerm]);
-
   const handleSearch = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(
-        `http://api.openweathermap.org/geo/1.0/direct?q=${searchTerm}&limit=5&appid=${API_KEY}`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch cities");
-      }
-      const data = await response.json();
-      setCities(data);
-      setIsOpen(true);
-    } catch (err) {
-      setError("Failed to fetch cities. Please try again.");
-      setCities([]);
-    } finally {
-      setIsLoading(false);
-    }
+    // In a real application, you would fetch cities from an API here
+    // For this example, we'll use a mock list
+    const mockCities = [
+      "New York",
+      "London",
+      "Paris",
+      "Tokyo",
+      "Sydney",
+      "Berlin",
+      "Rome",
+      "Madrid",
+      "Moscow",
+      "Beijing",
+    ].filter((city) => city.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    setCities(mockCities);
+    setIsOpen(true);
   };
 
   const handleCitySelect = (city) => {
-    onCitySelect(city.name);
+    onCitySelect(city);
     setIsOpen(false);
     setSearchTerm("");
   };
@@ -67,21 +53,25 @@ const CitySearch = ({ onCitySelect }) => {
           placeholder="Search for a city"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="flex-grow p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          onFocus={() => setIsOpen(true)}
+          className="flex-grow p-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
+        <button
+          onClick={handleSearch}
+          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-r-md"
+        >
+          Search
+        </button>
       </div>
-      {isLoading && <p className="mt-2 text-gray-600">Loading...</p>}
-      {error && <p className="mt-2 text-red-500">{error}</p>}
-      {isOpen && cities.length > 0 && (
-        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
-          {cities.map((city) => (
+      {isOpen && (
+        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+          {cities.map((city, index) => (
             <div
-              key={`${city.lat}-${city.lon}`}
+              key={index}
               className="p-2 hover:bg-gray-100 cursor-pointer"
               onClick={() => handleCitySelect(city)}
             >
-              {city.name}, {city.state && `${city.state}, `}
-              {city.country}
+              {city}
             </div>
           ))}
         </div>
